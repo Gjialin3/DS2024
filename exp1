@@ -1,1 +1,34 @@
-
+int main() {
+    Vector<Complex> complexVector;
+    srand(time(NULL));
+    for (int i = 0; i < 10; ++i) {
+        double r = static_cast<double>(rand()) / RAND_MAX * 10;
+        double i = static_cast<double>(rand()) / RAND_MAX * 10;
+        complexVector.push_back(Complex(r, i));
+    }
+    std::cout << "Original Vector: ";
+    complexVector.print();
+    complexVector.unique();
+    std::cout << "After Unique: ";
+    complexVector.print();
+    complexVector.sort();
+    std::cout << "Sorted Vector: ";
+    complexVector.print();
+    complexVector.push_back(Complex(3, 4));
+    std::cout << "After Insertion: ";
+    complexVector.print();
+    complexVector.erase(Complex(3, 4));
+    std::cout << "After Deletion: ";
+    complexVector.print();
+    double m1 = 5.0;
+    double m2 = 8.0;
+    Vector<Complex> result;
+    for (const auto& c : complexVector) {
+        if (c.modulus() >= m1 && c.modulus() < m2) {
+            result.push_back(c);
+        }
+    }
+    std::cout << "Elements in range [" << m1 << ", " << m2 << "): ";
+    result.print();
+    return 0;
+}
