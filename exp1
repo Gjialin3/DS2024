@@ -107,7 +107,7 @@ std::vector<Complex> intervalSearch(const std::vector<Complex>& vec, double m1, 
 void runTests() {
     // 测试 1: 置乱函数
     std::vector<int> vec1;
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 50; i++) {
         vec1.push_back(std::rand() % 10);
     }
     std::vector<int> originalVec1 = vec1;
@@ -121,7 +121,7 @@ void runTests() {
 
     // 测试 2: 查找函数
     std::vector<int> vec2;
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 50; i++) {
         vec2.push_back(std::rand() % 10);
     }
     int target = vec2[std::rand() % vec2.size()];
@@ -130,7 +130,7 @@ void runTests() {
     
     // 测试 3: 插入函数
     std::vector<int> vec3;
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 30; i++) {
         vec3.push_back(std::rand() % 10);
     }
     int elementToInsert = std::rand() % 10;
@@ -141,7 +141,7 @@ void runTests() {
 
     // 测试 4: 删除函数
     std::vector<int> vec4;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 40; i++) {
         vec4.push_back(std::rand() % 10);
     }
     int elementToDelete = vec4[std::rand() % vec4.size()];
@@ -152,7 +152,7 @@ void runTests() {
 
     // 测试 5: 唯一化函数
      std::vector<int> vec5;
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 60; i++) {
         vec5.push_back(std::rand() % 10);
     }
     uniqueifyVector(vec5);
