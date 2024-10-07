@@ -220,6 +220,6 @@ void mergeSort(std::vector<T>& vec, typename std::vector<T>::iterator left, type
         while (second < right) {
             temp.push_back(*second++);
         }
-        std::copy(temp.begin(), temp.end(), left); // 正确覆盖合并结果
+        std::copy(temp.begin(), temp.end(), left);
     }
 }
