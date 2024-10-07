@@ -140,11 +140,11 @@ void runTests() {
     std::cout << std::endl;
 
     // 测试 6: 区间查找函数
-    std::vector<Complex> complexVec;
-    for (int i = 0; i < 3; i++) {
-    double realPart = static_cast<double>(std::rand()) / RAND_MAX * 10 - 5;
-    double imagPart = static_cast<double>(std::rand()) / RAND_MAX * 10 - 5;
-    complexVec.push_back(Complex(realPart, imagPart));
+   std::vector<Complex> intervalResult = intervalSearch(complexVec, m1, m2);
+   std::cout << "测试6: 区间查找函数 - 区间 [" << m1 << "," << m2 << ") 的结果:";
+   for (auto &c : intervalResult) 
+    std::cout << "(" << c.getReal() << ", " << c.getImag() << ") ";
+std::cout << std::endl;
 }
 double m1 = (std::rand() % 5) + 1.0;
 double m2 = m1 + (std::rand() % 5) + 1.0;
@@ -209,6 +209,10 @@ int main() {
     double m1 = 2.0;
     double m2 = 4.0;
     std::vector<Complex> intervalResult = intervalSearch(complexVector, m1, m2);
+    std::cout << "测试区间查找操作结果: ";
+    for (auto &c : intervalResult) 
+    std::cout << "(" << c.getReal() << ", " << c.getImag() << ") ";
+    std::cout << std::endl;
 
     std::cout << "顺序排序时间: " << orderSortTime << " 秒" << std::endl;
     std::cout << "乱序排序时间: " << shuffledSortTime << " 秒" << std::endl;
