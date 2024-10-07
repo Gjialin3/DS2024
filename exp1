@@ -8,6 +8,27 @@
 
 std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
+// 复数类定义
+class Complex {
+private:
+    double real;
+    double imag;
+
+public:
+    Complex(double r = 0.0, double i = 0.0) : real(r), imag(i) {}
+    double getReal() const { return real; }
+    double getImag() const { return imag; }
+    double modulus() const { return std::sqrt(real * real + imag * imag); }
+    bool operator==(const Complex& other) const {
+        return (real == other.real) && (imag == other.imag);
+    }
+
+    // 用于输出复数的友元函数
+    friend std::ostream& operator<<(std::ostream& os, const Complex& c) {
+        os << "(" << c.real << ", " << c.imag << "i)";  // 这里在虚部后面添加了 "i"，以更符合复数的表示习惯
+        return os;
+    }
+};
 // 置乱函数
 template <typename T>
 void shuffleVector(std::vector<T>& vec) {
