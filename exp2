@@ -1,118 +1,138 @@
-import math
+#include <iostream>
+#include <vector>
+#include <stack>
+#include <sstream>
+#include <stdexcept>
+#include <ctime> // 更改头文件以使用 time
 
-class Stack:
-    def __init__(self):
-        self.items = []
+class Stack {
+private:
+    std::vector<int> elements;
 
-    def push(self, item):
-        self.items.append(item)
+public:
+    void push(int value) {
+        elements.push_back(value);
+    }
 
-    def pop(self):
-        return self.items.pop()
+    int pop() {
+        if (isEmpty()) {
+            throw std::out_of_range("Stack is empty");
+        }
+        int value = elements.back();
+        elements.pop_back();
+        return value;
+    }
 
-    def peek(self):
-        return self.items[-1] if self.items else None
+    bool isEmpty() const {
+        return elements.empty();
+    }
+};
 
-    def is_empty(self):
-        return len(self.items) == 0
+class Calculator {
+private:
+    Stack stack;
 
-        
+    int applyOperation(int a, int b, char op) {
+        switch (op) {
+            case '+': return a + b;
+            case '-': return a - b;
+            case '*': return a * b;
+            case '/': 
+                if (b == 0) throw std::invalid_argument("Division by zero");
+                return a / b;
+            default: throw std::invalid_argument("Invalid operator");
+        }
+    }
 
+public:
+    int evaluate(const std::string& expression) {
+        std::istringstream tokens(expression);
+        char op;
+        int number;
+        int result = 0;
+        char lastOperator = '+';
 
-def calculate(expression):
-    # 优先级字典，可根据书上代码4.6补充完整
-    precedence = {'+': 1, '-': 1, '*': 2, '/': 2, '^': 3}
-    stack_num = Stack()
-    stack_op = Stack()
-    current_num = ""
-    for char in expression:
-        if char.isdigit():
-            current_num += char
-        elif char == '.':
-            current_num += char
-        elif char in "+-*/^":
-            if current_num:
-                stack_num.push(float(current_num))
-                current_num = ""
-            while (not stack_op.is_empty()) and (stack_op.peek() in precedence) and (
-                    precedence[char] <= precedence[stack_op.peek()]):
-                op = stack_op.pop()
-                num2 = stack_num.pop()
-                num1 = stack_num.pop()
-                if op == '+':
-                    stack_num.push(num1 + num2)
-                elif op == '-':
-                    stack_num.push(num1 - num2)
-                elif op == '*':
-                    stack_num.push(num1 * num2)
-                elif op == '/':
-                    stack_num.push(num1 / num2)
-                elif op == '^':
-                    stack_num.push(math.pow(num1, num2))
-            stack_op.push(char)
-        elif char == '(':
-            stack_op.push(char)
-        elif char == ')':
-            while stack_op.peek()!= '(':
-                op = stack_op.pop()
-                num2 = stack_num.pop()
-                num1 = stack_num.pop()
-                if op == '+':
-                    stack_num.push(num1 + num2)
-                elif op == '-':
-                    stack_num.push(num1 - num2)
-                elif op == '*':
-                    stack_num.push(num1 * num2)
-                elif op == '/':
-                    stack_num.push(num1 / num2)
-                elif op == '^':
-                    stack_num.push(math.pow(num1, num2))
-            stack_op.pop()  # 弹出 '('
-    if current_num:
-        stack_num.push(float(current_num))
-    while not stack_op.is_empty():
-        op = stack_op.pop()
-        num2 = stack_num.pop()
-        num1 = stack_num.pop()
-        if op == '+':
-            stack_num.push(num1 + num2)
-        elif op == '-':
-            stack_num.push(num1 - num2)
-        elif op == '*':
-            stack_num.push(num1 * num2)
-        elif op == '/':
-            stack_num.push(num1 / num2)
-        elif op == '^':
-            stack_num.push(math.pow(num1, num2))
-    return stack_num.pop()
+        while (tokens >> number) {
+            if (lastOperator == '+' || lastOperator == '-') {
+                stack.push((lastOperator == '+') ? number : -number);
+            } else {
+                int top = stack.pop();
+                stack.push(applyOperation(top, number, lastOperator));
+            }
+            if (!(tokens >> lastOperator)) break; // 读取下一个操作符
+        }
 
+        while (!stack.isEmpty()) {
+            result += stack.pop();
+        }
 
-def largestRectangleArea(heights):
-    stack = []
-    max_area = 0
-    index = 0
-    while index < len(heights):
-        if not stack or heights[index] >= heights[stack[-1]]:
-            stack.append(index)
-            index += 1
-        else:
-            top_index = stack.pop()
-            area = heights[top_index] * (index - stack[-1] - 1 if stack else index)
-            max_area = max(max_area, area)
-    while stack:
-        top_index = stack.pop()
-        area = heights[top_index] * (index - stack[-1] - 1 if stack else index)
-        max_area = max(max_area, area)
-    return max_area
+        return result;
+    }
+};
 
+int largestRectangleArea(const std::vector<int>& heights) {
+    std::stack<int> indices;
+    int maxArea = 0;
+    int n = heights.size();
 
-# 测试字符串计算器
-print(calculate("2+3*4"))  
-print(calculate("1+2-3*4/2"))  
-print(calculate("2.5+3*(4-1)^2"))  
-print(calculate("(2+3)*4"))  
-print(calculate("sin(30)"))  # 示例调用，需补充对sin等函数的完整处理逻辑
+    for (int i = 0; i <= n; ++i) {
+        int h = (i == n) ? 0 : heights[i];
+        while (!indices.empty() && heights[indices.top()] > h) {
+            int height = heights[indices.top()];
+            indices.pop();
+            int width = indices.empty() ? i : i - indices.top() - 1;
+            maxArea = std::max(maxArea, height * width);
+        }
+        indices.push(i);
+    }
 
-# 测试柱状图面积计算
-print(largestRectangleArea([2, 1, 5, 6, 2, 3]))  
-print(largestRectangleArea([2, 4]))  
+    return maxArea;
+}
+
+void generateRandomHeights(int n) {
+    std::vector<int> heights(n);
+    for (int i = 0; i < n; i++) {
+        heights[i] = rand() % 100 + 1; // 随机生成1到100之间的高度
+    }
+
+    std::cout << "Heights: ";
+    for (int h : heights) {
+        std::cout << h << " ";
+    }
+    std::cout << std::endl;
+
+    int maxArea = largestRectangleArea(heights);
+    std::cout << "Max Area: " << maxArea << std::endl;
+}
+
+int main() {
+    srand(static_cast<unsigned>(time(0))); // 更改为time(0)
+
+    for (int i = 0; i < 10; i++) {
+        int n = rand() % 100 + 1;
+        generateRandomHeights(n);
+    }
+
+    // 测试计算器
+    Calculator calc;
+    std::string expr = "3 + 5 - 2 * 2 / 1";
+    std::cout << "Result of '" << expr << "' is: " << calc.evaluate(expr) << std::endl;
+    
+    // 添加示例 1
+    std::vector<int> example1 = {2, 1, 5, 6, 2, 3};
+    std::cout << "Example 1 Heights: ";
+    for (int h : example1) {
+        std::cout << h << " ";
+    }
+    std::cout << "\nMax Area: " << largestRectangleArea(example1) << std::endl;
+
+    // 添加示例 2
+    std::vector<int> example2 = {2, 4};
+    std::cout << "Example 2 Heights: ";
+    for (int h : example2) {
+        std::cout << h << " ";
+    }
+    std::cout << "\nMax Area: " << largestRectangleArea(example2) << std::endl;
+
+    return 0;
+}
