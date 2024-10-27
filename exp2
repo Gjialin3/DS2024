@@ -16,6 +16,8 @@ class Stack:
     def is_empty(self):
         return len(self.items) == 0
 
+        
+
 
 def calculate(expression):
     # 优先级字典，可根据书上代码4.6补充完整
