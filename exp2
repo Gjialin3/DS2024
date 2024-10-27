@@ -1,1 +1,116 @@
+import math
 
+class Stack:
+    def __init__(self):
+        self.items = []
+
+    def push(self, item):
+        self.items.append(item)
+
+    def pop(self):
+        return self.items.pop()
+
+    def peek(self):
+        return self.items[-1] if self.items else None
+
+    def is_empty(self):
+        return len(self.items) == 0
+
+
+def calculate(expression):
+    # 优先级字典，可根据书上代码4.6补充完整
+    precedence = {'+': 1, '-': 1, '*': 2, '/': 2, '^': 3}
+    stack_num = Stack()
+    stack_op = Stack()
+    current_num = ""
+    for char in expression:
+        if char.isdigit():
+            current_num += char
+        elif char == '.':
+            current_num += char
+        elif char in "+-*/^":
+            if current_num:
+                stack_num.push(float(current_num))
+                current_num = ""
+            while (not stack_op.is_empty()) and (stack_op.peek() in precedence) and (
+                    precedence[char] <= precedence[stack_op.peek()]):
+                op = stack_op.pop()
+                num2 = stack_num.pop()
+                num1 = stack_num.pop()
+                if op == '+':
+                    stack_num.push(num1 + num2)
+                elif op == '-':
+                    stack_num.push(num1 - num2)
+                elif op == '*':
+                    stack_num.push(num1 * num2)
+                elif op == '/':
+                    stack_num.push(num1 / num2)
+                elif op == '^':
+                    stack_num.push(math.pow(num1, num2))
+            stack_op.push(char)
+        elif char == '(':
+            stack_op.push(char)
+        elif char == ')':
+            while stack_op.peek()!= '(':
+                op = stack_op.pop()
+                num2 = stack_num.pop()
+                num1 = stack_num.pop()
+                if op == '+':
+                    stack_num.push(num1 + num2)
+                elif op == '-':
+                    stack_num.push(num1 - num2)
+                elif op == '*':
+                    stack_num.push(num1 * num2)
+                elif op == '/':
+                    stack_num.push(num1 / num2)
+                elif op == '^':
+                    stack_num.push(math.pow(num1, num2))
+            stack_op.pop()  # 弹出 '('
+    if current_num:
+        stack_num.push(float(current_num))
+    while not stack_op.is_empty():
+        op = stack_op.pop()
+        num2 = stack_num.pop()
+        num1 = stack_num.pop()
+        if op == '+':
+            stack_num.push(num1 + num2)
+        elif op == '-':
+            stack_num.push(num1 - num2)
+        elif op == '*':
+            stack_num.push(num1 * num2)
+        elif op == '/':
+            stack_num.push(num1 / num2)
+        elif op == '^':
+            stack_num.push(math.pow(num1, num2))
+    return stack_num.pop()
+
+
+def largestRectangleArea(heights):
+    stack = []
+    max_area = 0
+    index = 0
+    while index < len(heights):
+        if not stack or heights[index] >= heights[stack[-1]]:
+            stack.append(index)
+            index += 1
+        else:
+            top_index = stack.pop()
+            area = heights[top_index] * (index - stack[-1] - 1 if stack else index)
+            max_area = max(max_area, area)
+    while stack:
+        top_index = stack.pop()
+        area = heights[top_index] * (index - stack[-1] - 1 if stack else index)
+        max_area = max(max_area, area)
+    return max_area
+
+
+# 测试字符串计算器
+print(calculate("2+3*4"))  
+print(calculate("1+2-3*4/2"))  
+print(calculate("2.5+3*(4-1)^2"))  
+print(calculate("(2+3)*4"))  
+print(calculate("sin(30)"))  # 示例调用，需补充对sin等函数的完整处理逻辑
+
+# 测试柱状图面积计算
+print(largestRectangleArea([2, 1, 5, 6, 2, 3]))  
+print(largestRectangleArea([2, 4]))  
