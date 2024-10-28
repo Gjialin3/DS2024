@@ -92,7 +92,7 @@ int largestRectangleArea(const std::vector<int>& heights) {
 void generateRandomHeights(int n) {
     std::vector<int> heights(n);
     for (int i = 0; i < n; i++) {
-        heights[i] = rand() % 100 + 1; // 随机生成1到100之间的高度
+        heights[i] = rand() % 105; // 随机生成0到104之间的高度
     }
 
     std::cout << "Heights: ";
@@ -109,13 +109,13 @@ int main() {
     srand(static_cast<unsigned>(time(0))); // 更改为time(0)
 
     for (int i = 0; i < 10; i++) {
-        int n = rand() % 100 + 1;
+        int n = rand() % 105 + 1; // 生成1到105之间的随机数作为数组长度
         generateRandomHeights(n);
     }
 
     // 测试计算器
     Calculator calc;
-    std::string expr = "3 + 5 - 2 * 2 / 1";
+    std::string expr = "6 + 8 - 5 * 2 / 1";
     std::cout << "Result of '" << expr << "' is: " << calc.evaluate(expr) << std::endl;
     
     // 示例 1
