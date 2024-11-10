@@ -1,243 +1,149 @@
 #include <iostream>
 #include <vector>
+#include <cstdlib>
 #include <ctime>
-#include <cmath>
-#include "Vector/include/vector.h"
-#include "Vector/include/complex.h"
-#include "Vector/include/sorting_algorithms.h"
+#include <algorithm>
+#include <random>
+#include "Vector.h"
+#include "Complex.h"
 
-std::srand(static_cast<unsigned int>(std::time(nullptr)));
-
-// 复数类定义
-class Complex {
-private:
-    double real;
-    double imag;
-
-public:
-    Complex(double r = 0.0, double i = 0.0) : real(r), imag(i) {}
-    double getReal() const { return real; }
-    double getImag() const { return imag; }
-    double modulus() const { return std::sqrt(real * real + imag * imag); }
-    bool operator==(const Complex& other) const {
-        return (real == other.real) && (imag == other.imag);
+Vector<Complex> generateRandomComplexVector(size_t count) {
+    Vector<Complex> vec;
+    for (size_t i = 0; i < count; ++i) {
+        double real = static_cast<double>(rand() % 100);
+        double imag = static_cast<double>(rand() % 100);
+        vec.push_back(Complex(real, imag));
     }
+    return vec;
+}
 
-    // 用于输出复数的友元函数
-    friend std::ostream& operator<<(std::ostream& os, const Complex& c) {
-        os << "(" << c.real << ", " << c.imag << "i)";  // 这里在虚部后面添加了 "i"，以更符合复数的表示习惯
-        return os;
+void printVector(const Vector<Complex>& vec) {
+    for (size_t i = 0; i < vec.getSize(); ++i) {
+        std::cout << vec[i] << " ";
     }
-};
-// 置乱函数
-template <typename T>
-void shuffleVector(std::vector<T>& vec) {
-    srand(static_cast<unsigned int>(time(nullptr)));
-    for (int i = vec.size() - 1; i > 0; --i) {
-        int j = rand() % (i + 1);
-        std::swap(vec[i], vec[j]);
+    std::cout << std::endl;
+}
+
+void bubbleSort(Vector<Complex>& vec) {
+    size_t n = vec.getSize();
+    for (size_t i = 0; i < n - 1; ++i) {
+        for (size_t j = 0; j < n - i - 1; ++j) {
+            if (vec[j].modulus() > vec[j + 1].modulus() || 
+                (vec[j].modulus() == vec[j + 1].modulus() && vec[j].getReal() > vec[j + 1].getReal())) {
+                std::swap(vec[j], vec[j + 1]);
+            }
+        }
     }
 }
 
-// 二分查找函数（假设向量是有序的）
-template <typename T>
-bool binarySearch(const std::vector<T>& vec, const T& target) {
-    int left = 0;
-    int right = vec.size() - 1;
-    while (left <= right) {
+void merge(Vector<Complex>& vec, int left, int mid, int right) {
+    int i, j, k;
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    Vector<Complex> L, R;
+    for (i = 0; i < n1; i++) {
+        L.push_back(vec[left + i]);
+    }
+    for (j = 0; j < n2; j++) {
+        R.push_back(vec[mid + 1 + j]);
+    }
+
+    i = 0;
+    j = 0;
+    k = left;
+
+    while (i < n1 && j < n2) {
+        if (L[i].modulus() < R[j].modulus()) {
+            vec[k++] = L[i++];
+        } else if (L[i].modulus() > R[j].modulus()) {
+            vec[k++] = R[j++];
+        } else {
+            if (L[i].getReal() < R[j].getReal()) {
+                vec[k++] = L[i++];
+            } else {
+                vec[k++] = R[j++];
+            }
+        }
+    }
+
+    while (i < n1) {
+        vec[k++] = L[i++];
+    }
+
+    while (j < n2) {
+        vec[k++] = R[j++];
+    }
+}
+
+void mergeSort(Vector<Complex>& vec, int left, int right) {
+    if (left < right) {
         int mid = left + (right - left) / 2;
-        if (vec[mid] == target)
-            return true;
-        if (vec[mid] < target)
-            left = mid + 1;
-        else
-            right = mid - 1;
+        mergeSort(vec, left, mid);
+        mergeSort(vec, mid + 1, right);
+        merge(vec, left, mid, right);
     }
-    return false;
-}
-// 查找函数
-template <typename T>
-bool findInVector(const std::vector<T>& vec, const T& target) {
-    for (const auto& element : vec) {
-        if (element == target)
-            return true;
-    }
-    return false;
-}
-
-// 插入函数
-template <typename T>
-void insertIntoVector(std::vector<T>& vec, const T& element) {
-    vec.push_back(element);
-}
-
-// 删除函数
-template <typename T>
-void deleteFromVector(std::vector<T>& vec, const T& target) {
-    for (auto it = vec.begin(); it!= vec.end(); ++it) {
-        if (*it == target) {
-            vec.erase(it);
-            return;
-        }
-    }
-}
-
-// 唯一化函数
-template <typename T>
-void uniqueifyVector(std::vector<T>& vec) {
-    std::sort(vec.begin(), vec.end());
-    auto it = std::unique(vec.begin(), vec.end());
-    vec.erase(it, vec.end());
-}
-
-// 区间查找函数
-std::vector<Complex> intervalSearch(const std::vector<Complex>& vec, double m1, double m2) {
-    std::vector<Complex> result;
-    for (const auto& element : vec) {
-        double mod = element.modulus();
-        if (mod >= m1 && mod < m2)
-        {
-            result.push_back(element);
-        }
-    }
-    return result;
-}
-
-// 测试函数
-void runTests() {
-    // 测试 1: 置乱函数
-    std::vector<int> vec1;
-    for (int i = 0; i < 50; i++) {
-        vec1.push_back(std::rand() % 10);
-    }
-    std::vector<int> originalVec1 = vec1;
-    shuffleVector(vec1);
-    std::cout << "测试 1: 置乱函数" << std::endl;
-    std::cout << "原始向量: ";
-    for(auto &n: originalVec1) std::cout << n << " ";
-    std::cout << "\n置乱后向量: ";
-    for(auto &n: vec1) std::cout << n << " ";
-    std::cout << std::endl << std::endl;
-
-    // 测试 2: 查找函数
-    std::vector<int> vec2;
-    for (int i = 0; i < 50; i++) {
-        vec2.push_back(std::rand() % 10);
-    }
-    int target = vec2[std::rand() % vec2.size()];
-    bool found = findInVector(vec2, target);
-    std::cout << "测试 2: 查找函数 - 查找 " << target << ": " << (found ? "找到" : "未找到") << std::endl;
-    
-    // 测试 3: 插入函数
-    std::vector<int> vec3;
-    for (int i = 0; i < 30; i++) {
-        vec3.push_back(std::rand() % 10);
-    }
-    int elementToInsert = std::rand() % 10;
-    insertIntoVector(vec3, elementToInsert);
-    std::cout << "测试3: 插入函数 - 插入 " << elementToInsert << " 后的向量: ";
-    for (auto &n : vec3) std::cout << n << " ";
-    std::cout << std::endl;
-
-    // 测试 4: 删除函数
-    std::vector<int> vec4;
-    for (int i = 0; i < 40; i++) {
-        vec4.push_back(std::rand() % 10);
-    }
-    int elementToDelete = vec4[std::rand() % vec4.size()];
-    deleteFromVector(vec4, elementToDelete);
-    std::cout << "测试4: 删除函数 - 删除 " << elementToDelete << " 后的向量: ";
-    for (auto &n : vec4) std::cout << n << " ";
-    std::cout << std::endl;
-
-    // 测试 5: 唯一化函数
-     std::vector<int> vec5;
-    for (int i = 0; i < 60; i++) {
-        vec5.push_back(std::rand() % 10);
-    }
-    uniqueifyVector(vec5);
-    std::cout << "测试5: 唯一化函数 - 唯一化后的向量: ";
-    for (auto &n : vec5) std::cout << n << " ";
-    std::cout << std::endl;
-
-    // 测试 6: 区间查找函数
-   std::vector<Complex> intervalResult = intervalSearch(complexVec, m1, m2);
-   std::cout << "测试6: 区间查找函数 - 区间 [" << m1 << "," << m2 << ") 的结果:";
-   for (auto &c : intervalResult) 
-    std::cout << "(" << c.getReal() << ", " << c.getImag() << ") ";
-std::cout << std::endl;
-}
-double m1 = (std::rand() % 5) + 1.0;
-double m2 = m1 + (std::rand() % 5) + 1.0;
-std::vector<Complex> intervalResult = intervalSearch (complexVec, m1, m2);
-std::cout << "测试 6: 区间查找函数 - 区间 [" << m1 << "," << m2 << ") 的结果:";
-for (auto &c : intervalResult) std::cout << "(" << c.getReal () << "," << c.getImag () << ")";
-std::cout << std::endl;
 }
 
 int main() {
-    // 随机生成无序复数向量（有重复项）
-    std::vector<Complex> complexVector;
-    srand(static_cast<unsigned int>(time(nullptr)));
-    for (int i = 0; i < 10; i++) {
-        double realPart = static_cast<double>(rand()) / RAND_MAX * 10 - 5;
-        double imagPart = static_cast<double>(rand()) / RAND_MAX * 10 - 5;
-        complexVector.push_back(Complex(realPart, imagPart));
+    srand(static_cast<unsigned>(time(0)));
+
+    // 生成无序复数向量
+    Vector<Complex> complexVec = generateRandomComplexVector(20);
+    std::cout << "Original vector: ";
+    printVector(complexVec);
+
+    // 置乱
+    std::vector<int> indices(complexVec.getSize());
+    std::iota(indices.begin(), indices.end(), 0);  // Fill indices
+    std::shuffle(indices.begin(), indices.end(), std::default_random_engine{});
+
+    Vector<Complex> shuffledVec;
+    for (int index : indices) {
+        shuffledVec.push_back(complexVec[index]);
     }
 
-    // 测试置乱操作
-    std::vector<Complex> shuffledComplexVector = complexVector;
-    shuffleVector(shuffledComplexVector);
+    std::cout << "Shuffled vector: ";
+    printVector(shuffledVec);
 
-    // 测试查找操作
-    Complex target(1.0, 2.0);
-    bool found = findInVector(complexVector, target);
+    // 查找测试（查找实部和虚部相同的复数）
+    for (size_t i = 0; i < shuffledVec.getSize(); ++i) {
+        if (shuffledVec[i].getReal() == shuffledVec[i].getImag()) {
+            std::cout << "Found: " << shuffledVec[i] << std::endl;
+        }
+    }
 
-    // 测试插入操作
-    Complex newElement(3.0, 4.0);
-    insertIntoVector(complexVector, newElement);
+    // 插入及删除操作
+    shuffledVec.push_back(Complex(5, 5));
+    std::cout << "After insertion: ";
+    printVector(shuffledVec);
+    shuffledVec.pop_back();
+    std::cout << "After deletion: ";
+    printVector(shuffledVec);
 
-    // 测试删除操作
-    deleteFromVector(complexVector, target);
+    // 唯一化操作
+    shuffledVec.unique();
+    std::cout << "Unique vector: ";
+    printVector(shuffledVec);
 
-    // 测试唯一化操作
-    uniqueifyVector(complexVector);
+    // 排序操作
+    Vector<Complex> sortedVec = shuffledVec; // 拷贝一份原始向量
+    mergeSort(sortedVec, 0, sortedVec.getSize() - 1);
 
-    // 测试排序操作及效率比较
-    std::vector<Complex> orderComplexVector = complexVector;
-    std::vector<Complex> reverseComplexVector = complexVector;
+    std::cout << "Sorted vector: ";
+    printVector(sortedVec);
 
-    // 顺序排序
-    clock_t start = clock();
-    mergeSort(orderComplexVector, orderComplexVector.begin(), orderComplexVector.end(), compareComplexByModulus);
-    clock_t end = clock();
-    double orderSortTime = static_cast<double>(end - start) / CLOCKS_PER_SEC;
-
-    // 乱序排序
-    start = clock();
-    mergeSort(shuffledComplexVector, shuffledComplexVector.begin(), shuffledComplexVector.end(), compareComplexByModulus);
-    end = clock();
-    double shuffledSortTime = static_cast<double>(end - start) / CLOCKS_PER_SEC;
-
-    // 逆序排序（先反转向量）
-    std::reverse(reverseComplexVector.begin(), reverseComplexVector.end());
-    start = clock();
-    mergeSort(reverseComplexVector, reverseComplexVector.begin(), reverseComplexVector.end(), compareComplexByModulus);
-    end = clock();
-    double reverseSortTime = static_cast<double)(end - start) / CLOCKS_PER_SEC;
-
-    // 测试区间查找操作
-    double m1 = 2.0;
-    double m2 = 4.0;
-    std::vector<Complex> intervalResult = intervalSearch(complexVector, m1, m2);
-    std::cout << "测试区间查找操作结果: ";
-    for (auto &c : intervalResult) 
-    std::cout << "(" << c.getReal() << ", " << c.getImag() << ") ";
-    std::cout << std::endl;
-
-    std::cout << "顺序排序时间: " << orderSortTime << " 秒" << std::endl;
-    std::cout << "乱序排序时间: " << shuffledSortTime << " 秒" << std::endl;
-    std::cout << "逆序排序时间: " << reverseSortTime << " 秒" << std::endl;
+    // 区间查找示例
+    double m1 = 5, m2 = 8;
+    Vector<Complex> intervalVec;
+    for (size_t i = 0; i < sortedVec.getSize(); ++i) {
+        double mod = sortedVec[i].modulus();
+        if (mod >= m1 && mod < m2) {
+            intervalVec.push_back(sortedVec[i]);
+        }
+    }
+    std::cout << "Elements in modulus range [" << m1 << ", " << m2 << "): ";
+    printVector(intervalVec);
 
     return 0;
 }
