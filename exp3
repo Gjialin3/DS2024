@@ -1,0 +1,108 @@
+#include <iostream>
+#include <queue>
+#include <unordered_map>
+#include <cstring>
+#include <cctype> // 引入此头文件以使用 tolower
+
+using namespace std;
+
+// Huffman节点定义
+struct HuffmanNode {
+    char ch;
+    int freq;
+    HuffmanNode* left;
+    HuffmanNode* right;
+
+    HuffmanNode(char character, int frequency)
+        : ch(character), freq(frequency), left(nullptr), right(nullptr) {}
+};
+
+// 自定义比较器
+struct Compare {
+    bool operator()(HuffmanNode* left, HuffmanNode* right) {
+        return left->freq > right->freq;
+    }
+};
+
+// Huffman树类
+class HuffmanTree {
+private:
+    HuffmanNode* root;
+
+public:
+    HuffmanTree(const unordered_map<char, int>& frequency) {
+        priority_queue<HuffmanNode*, vector<HuffmanNode*>, Compare> pq;
+
+        // 构建初始的Huffman节点优先队列
+        for (const auto& pair : frequency) {
+            pq.push(new HuffmanNode(pair.first, pair.second));
+        }
+
+        // 构建Huffman树
+        while (pq.size() > 1) {
+            HuffmanNode* left = pq.top(); pq.pop();
+            HuffmanNode* right = pq.top(); pq.pop();
+
+            HuffmanNode* newNode = new HuffmanNode('\0', left->freq + right->freq);
+            newNode->left = left;
+            newNode->right = right;
+            pq.push(newNode);
+        }
+        root = pq.top();
+    }
+
+    // 构建Huffman编码的辅助函数
+    void buildHuffmanCodes(HuffmanNode* node, const string& str, 
+                           unordered_map<char, string>& huffmanCode) {
+        if (!node) return;
+
+        if (!node->left && !node->right) {
+            huffmanCode[node->ch] = str;
+        }
+        buildHuffmanCodes(node->left, str + "0", huffmanCode);
+        buildHuffmanCodes(node->right, str + "1", huffmanCode);
+    }
+
+    HuffmanNode* getRoot() {
+        return root;
+    }
+};
+
+// Huffman编码函数
+void encode(const string& text) {
+    unordered_map<char, int> frequency;
+
+    // 计算字符频率（不区分大小写）
+    for (char ch : text) {
+        if (isalpha(ch)) { // 只计算字母
+            frequency[tolower(ch)]++; // 将字符转换为小写
+        }
+    }
+
+    HuffmanTree huffmanTree(frequency);
+    unordered_map<char, string> huffmanCode;
+    huffmanTree.buildHuffmanCodes(huffmanTree.getRoot(), "", huffmanCode);
+
+    // 输出Huffman编码
+    cout << "Huffman Codes:\n";
+    for (const auto& pair : huffmanCode) {
+        cout << pair.first << ": " << pair.second << '\n';
+    }
+
+    // 编码文本
+    cout << "Encoded text:\n";
+    for (char ch : text) {
+        if (isalpha(ch)) { // 只编码字母
+            cout << huffmanCode[tolower(ch)]; // 编码时同样转换为小写
+        }
+    }
+    cout << endl;
+}
+
+// 主程序
+int main() {
+    string text = "We cannot walk alone"; // 自定义要编码的文本
+    encode(text);
+    return 0;
+}
+
