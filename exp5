@@ -1,1 +1,198 @@
+#include <iostream>
+#include <vector>
+#include <ctime>
+#include <cstdlib>
+#include <algorithm>
+
+void bubbleSort(std::vector<int>& arr);
+void insertionSort(std::vector<int>& arr);
+void selectionSort(std::vector<int>& arr);
+void mergeSort(std::vector<int>& arr);
+void quickSort(std::vector<int>& arr);
+void heapSort(std::vector<int>& arr);
+
+void merge(std::vector<int>& arr, int left, int mid, int right);
+void quickSortUtil(std::vector<int>& arr, int low, int high);
+void heapify(std::vector<int>& arr, int n, int i);
+void testSortingAlgorithm(void (*sortFunc)(std::vector<int>&), const std::string& name);
+
+int main() {
+    std::cout << "Sorting Algorithms Performance Comparison:\n";
+    
+    testSortingAlgorithm(bubbleSort, "Bubble Sort");
+    testSortingAlgorithm(insertionSort, "Insertion Sort");
+    testSortingAlgorithm(selectionSort, "Selection Sort");
+    testSortingAlgorithm(mergeSort, "Merge Sort");
+    testSortingAlgorithm(quickSort, "Quick Sort");
+    testSortingAlgorithm(heapSort, "Heap Sort");
+
+    return 0;
+}
+
+void bubbleSort(std::vector<int>& arr) {
+    int n = arr.size();
+    for (int i = 0; i < n-1; ++i) {
+        for (int j = 0; j < n-i-1; ++j) {
+            if (arr[j] > arr[j+1]) {
+                std::swap(arr[j], arr[j+1]);
+            }
+        }
+    }
+}
+
+void insertionSort(std::vector<int>& arr) {
+    int n = arr.size();
+    for (int i = 1; i < n; ++i) {
+        int key = arr[i];
+        int j = i - 1;
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        arr[j + 1] = key;
+    }
+}
+
+void selectionSort(std::vector<int>& arr) {
+    int n = arr.size();
+    for (int i = 0; i < n-1; ++i) {
+        int minIndex = i;
+        for (int j = i + 1; j < n; ++j) {
+            if (arr[j] < arr[minIndex]) {
+                minIndex = j;
+            }
+        }
+        std::swap(arr[i], arr[minIndex]);
+    }
+}
+
+void merge(std::vector<int>& arr, int left, int mid, int right) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+    
+    std::vector<int> L(n1), R(n2);
+    
+    for (int i = 0; i < n1; i++)
+        L[i] = arr[left + i];
+    for (int j = 0; j < n2; j++)
+        R[j] = arr[mid + 1 + j];
+
+    int i = 0, j = 0;
+    int k = left;
+    while (i < n1 && j < n2) {
+        if (L[i] <= R[j]) {
+            arr[k] = L[i];
+            i++;
+        } else {
+            arr[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+    
+    while (i < n1) {
+        arr[k] = L[i];
+        i++;
+        k++;
+    }
+    
+    while (j < n2) {
+        arr[k] = R[j];
+        j++;
+        k++;
+    }
+}
+
+void mergeSort(std::vector<int>& arr) {
+    int n = arr.size();
+    for (int curr_size = 1; curr_size <= n - 1; curr_size = 2 * curr_size) {
+        for (int left_start = 0; left_start < n - 1; left_start += 2 * curr_size) {
+            int mid = std::min(left_start + curr_size - 1, n - 1);
+            int right_end = std::min(left_start + 2 * curr_size - 1, n - 1);
+            merge(arr, left_start, mid, right_end);
+        }
+    }
+}
+
+void quickSortUtil(std::vector<int>& arr, int low, int high) {
+    if (low < high) {
+        int pivot = arr[high];
+        int i = (low - 1);
+        for (int j = low; j < high; j++) {
+            if (arr[j] < pivot) {
+                i++;
+                std::swap(arr[i], arr[j]);
+            }
+        }
+        std::swap(arr[i + 1], arr[high]);
+        int pi = i + 1;
+
+        quickSortUtil(arr, low, pi - 1);
+        quickSortUtil(arr, pi + 1, high);
+    }
+}
+
+void quickSort(std::vector<int>& arr) {
+    quickSortUtil(arr, 0, arr.size() - 1);
+}
+
+void heapify(std::vector<int>& arr, int n, int i) {
+    int largest = i;
+    int left = 2 * i + 1;
+    int right = 2 * i + 2;
+
+    if (left < n && arr[left] > arr[largest])
+        largest = left;
+
+    if (right < n && arr[right] > arr[largest])
+        largest = right;
+
+    if (largest != i) {
+        std::swap(arr[i], arr[largest]);
+        heapify(arr, n, largest);
+    }
+}
+
+void heapSort(std::vector<int>& arr) {
+    int n = arr.size();
+    for (int i = n / 2 - 1; i >= 0; i--)
+        heapify(arr, n, i);
+    for (int i = n - 1; i > 0; i--) {
+        std::swap(arr[0], arr[i]);
+        heapify(arr, i, 0);
+    }
+}
+
+void testSortingAlgorithm(void (*sortFunc)(std::vector<int>&), const std::string& name) {
+    const int SIZE = 10000; // 你可以根据需要修改大小
+    const int TEST_COUNT = 3; // 测试顺序、逆序和随机序列的次数
+    
+    std::vector<int> original(SIZE);
+    for (int i = 0; i < SIZE; ++i) {
+        original[i] = i; // 顺序序列
+    }
+    
+    for (int test = 0; test < TEST_COUNT; ++test) {
+        std::vector<int> arr = original;
+
+        // 处理不同的测试情况
+        if (test == 1) { // 逆序
+            std::reverse(arr.begin(), arr.end());
+        } else if (test == 2) { // 随机序列
+            std::random_shuffle(arr.begin(), arr.end());
+        }
+
+        // 计时排序
+        clock_t start = clock();
+        sortFunc(arr);
+        clock_t end = clock();
+        
+        double duration = double(end - start) / CLOCKS_PER_SEC;
+
+        // 输出结果
+        std::cout << name << " (" 
+                  << (test == 0 ? "顺序" : test == 1 ? "逆序" : "随机") 
+                  << ") - 耗时: " << duration << "秒\n";
+    }
+}
 
