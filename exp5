@@ -164,7 +164,7 @@ void heapSort(std::vector<int>& arr) {
 }
 
 void testSortingAlgorithm(void (*sortFunc)(std::vector<int>&), const std::string& name) {
-    const int SIZE = 10000; // 你可以根据需要修改大小
+    const int SIZE = 10000; // 可以根据需要修改
     const int TEST_COUNT = 3; // 测试顺序、逆序和随机序列的次数
     
     std::vector<int> original(SIZE);
@@ -195,4 +195,3 @@ void testSortingAlgorithm(void (*sortFunc)(std::vector<int>&), const std::string
                   << ") - 耗时: " << duration << "秒\n";
     }
 }
-
